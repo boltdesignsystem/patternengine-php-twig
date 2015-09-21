@@ -25,13 +25,15 @@
 	},
 	"require": {
 		"php":              ">=5.3.6",
-		"twig/twig":        "~1.15",
-		"pattern-lab/core": "dev-dev"
+		"pattern-lab/core": "dev-dev",
+		"twig/twig":        "1.*"
 	},
 	"extra": {
 		"patternlab": {
-			"config": { 
-				"lineageMatch": "{%([ ]+)?include [&quot;\\&#039;]([A-Za-z0-9-_]+)[&quot;\\&#039;](.*)%}",
+			"config": {
+                "packagesDir": "vendor",
+                "styleguideKit": "pattern-lab/styleguidekit-twig-gi",
+				"lineageMatch": "{%([ ]+)?(?:extends|include|embed) [&quot;\\&#039;]([A-Za-z0-9-_]+)[&quot;\\&#039;](.*)%}",
 				"lineageMatchKey": 2,
 				"patternExtension": "twig",
 				"twigDebug": false,
