@@ -76,11 +76,12 @@ Would be used like this in a pattern:
 
 ### Template inheritance
 
-The requirements for using template inheritance with Pattern Lab:
+How to use [Template Inheritance](http://twig.sensiolabs.org/doc/templates.html#template-inheritance) with Pattern Lab:
 
-* Files must go in `source/_layouts`
-* Files must have the extension `.twig`
-* The filename will be used as the reference in the `extends` tag
+* Files must have the extension `.twig`.
+* Files can be extended either by using Pattern Lab's normal shorthand syntax (e.g, `{% extends 'templates-extended-layout'%}`).
+* Files can optionally go in `source/_layouts` in order to hide them from the list of patterns and then you can just use the filename as reference (e.g., `{% extends 'extended-layout'%}`).
+* Files that are in the same directory can also just use the file name without the shorthand syntax (however, it must include the extension). So if `file1.twig` and `file2.twig` were in same directory, you could place this code in `file2.twig`: `{% extends 'file1.twig' %}`. 
 
 An example of a simple layout called `base.twig` in `source/_layouts`:
 
@@ -124,6 +125,8 @@ Would be used like this in a pattern:
 {% endblock %}
 ```
 
+All uses of `extends` above also work with `includes`, `embed` and most likely many other Twig Tags. Let us know if you run into interesting or unexpected use cases!
+
 ## Extending Twig Further
 
 Twig comes with a number of ways to extend the underlying template parser. You can you can add [extra tags](http://twig.sensiolabs.org/doc/advanced.html#tags), [filters](http://twig.sensiolabs.org/doc/advanced.html#filters), [tests](http://twig.sensiolabs.org/doc/advanced.html#tests), and [functions](http://twig.sensiolabs.org/doc/advanced.html#functions). The Twig PatternEngine tries to simplify these extensions by allowing you to create files in specific folders and then auto-load the extensions for you. Learn more about:
@@ -148,7 +151,7 @@ The requirements for using filters with Pattern Lab:
 * The filter **must** set the variable `$filter`
 * Only one filter per file (_e.g. can only set `$filter` once per file_)
 
-An example function called `rot13.filter.twig` in `source/_twig-components/filters`:
+An example function called `rot13.filter.php` in `source/_twig-components/filters`:
 
 ```php
 <?php
@@ -175,7 +178,7 @@ The requirements for using functions with Pattern Lab:
 * The function **must** set the variable `$function`
 * Only one function per file (_e.g. can only set `$function` once per file_)
 
-An example function called `boo.function.twig` in `source/_twig-components/functions`:
+An example function called `boo.function.php` in `source/_twig-components/functions`:
 
 ```php
 <?php
@@ -202,7 +205,7 @@ The requirements for using tests with Pattern Lab:
 * The test **must** set the variable `$test`
 * Only one test per file (_e.g. can only set `$test` once per file_)
 
-An example of a simple test called `red.test.twig` in `source/_twig-components/tests`:
+An example of a simple test called `red.test.php` in `source/_twig-components/tests`:
 
 ```php
 <?php
@@ -254,7 +257,7 @@ Tags are the most complicated extension to set-up with Pattern Lab. Three steps 
 
 Pattern Lab takes care of the registering for you based on the file name.
 
-An example of a simple tag called `setdupe.tag.twig` in `source/_twig-components/tags` that mimics the default `set` tag. Please note all of the locations where class names incorporate the filename, `setdupe`.
+An example of a simple tag called `setdupe.tag.php` in `source/_twig-components/tags` that mimics the default `set` tag. Please note all of the locations where class names incorporate the filename, `setdupe`.
 
 ```php
 <?php
@@ -328,11 +331,11 @@ You can modify the default date and interval formats for Twig by editing the `tw
 
 To disable extensions that you're no longer using simply add an underscore to the beginning of a filename and then re-generate your site. For example, the enabled rot13 filter:
 
-    source/_twig-components/filters/rot13.filter.twig
+    source/_twig-components/filters/rot13.filter.php
 
 And the disabled rot13 filter:
 
-    source/_twig-components/filters/_rot13.filter.twig
+    source/_twig-components/filters/_rot13.filter.php
 
 Then re-generate your Pattern Lab site with:
 

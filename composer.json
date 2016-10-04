@@ -24,19 +24,17 @@
 		}
 	},
 	"require": {
-		"php":              ">=5.3.6",
 		"pattern-lab/core": "dev-dev",
-		"twig/twig":        "1.*"
+		"twig/twig":        "~1.0"
 	},
 	"extra": {
 		"patternlab": {
 			"config": {
-                "packagesDir": "vendor",
-                "styleguideKit": "pattern-lab/styleguidekit-twig-gi",
-				"lineageMatch": "{%([ ]+)?(?:extends|include|embed) [&quot;\\&#039;]([A-Za-z0-9-_]+)[&quot;\\&#039;](.*)%}",
-				"lineageMatchKey": 2,
+				"lineageMatch": "{%([ ]+)?include( |\\()[&quot;\\&#039;]([A-Za-z0-9-_]+)[&quot;\\&#039;](\\))?(.*)%}",
+				"lineageMatchKey": 3,
 				"patternExtension": "twig",
 				"twigDebug": false,
+				"twigAutoescape": "html",
 				"twigDefaultDateFormat": "",
 				"twigDefaultIntervalFormat": "",
 				"twigMacroExt": "macro.twig",

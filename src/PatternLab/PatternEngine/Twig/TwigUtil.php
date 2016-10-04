@@ -18,48 +18,87 @@ use \Symfony\Component\Finder\Finder;
 
 class TwigUtil {
 	
+	protected static $instance = '';
+	
+	/**
+	* Get an instance of the Twig environment
+	*
+	* @return {Instance}       an instance of the Twig environment
+	*/
+	public static function getInstance() {
+		
+		if (empty(self::$instance)) {
+			return false;
+		}
+		
+		return self::$instance;
+		
+	}
+	
+	/**
+	* Set an instance of the Twig environment
+	* @param  {Instance}       an instance of the Twig environment
+	*/
+	public static function setInstance($instance = "") {
+		
+		if (empty($instance) || !method_exists($instance,'addGlobal')) {
+			Console::writeError("please set the instance");
+		}
+		
+		self::$instance = $instance;
+		
+	}
+	
+	/**
+	* Registering each directory under `_patterns/` as a namespace. For example, `_patterns/00-atoms/` as `@atoms`
+	* @param  {Instance}       an instance of the filesystem Loader
+	* @param  {String}         the path to the pattern directory
+	*
+	* @return {Instance}       an instance of the filesystem Loader
+	*/
+	public static function addPaths($filesystemLoader, $patternSourceDir) {
+		
+		$finder = new Finder();
+		$finder->directories()->depth(0)->in($patternSourceDir);
+		foreach ($finder as $file) {
+			$patternBits = explode("-",$file->getRelativePathName(),2);
+			$patternTypePath = (((int)$patternBits[0] != 0) || ($patternBits[0] == '00')) ? $patternBits[1] : $pattern;
+			$filesystemLoader->addPath($file->getPathName(), $patternTypePath);
+		}
+		
+		return $filesystemLoader;
+		
+	}
+	
 	/**
 	* Load custom date formats for Twig
-	* @param  {Instance}       an instance of the twig engine
-	*
-	* @return {Instance}       an instance of the twig engine
 	*/
-	public static function loadDateFormats($instance) {
+	public static function loadDateFormats() {
 		
 		$dateFormat     = Config::getOption("twigDefaultDateFormat");
 		$intervalFormat = Config::getOption("twigDefaultIntervalFormat");
 		
 		if ($dateFormat && $intervalFormat && !empty($dateFormat) && !empty($intervalFormat)) {
-			$instance->getExtension("core")->setDateFormat($dateFormat, $intervalFormat);
+			self::$instance->getExtension("core")->setDateFormat($dateFormat, $intervalFormat);
 		}
-		
-		return $instance;
 		
 	}
 	
 	/**
 	* Enable the debug options for Twig
-	* @param  {Instance}       an instance of the twig engine
-	*
-	* @return {Instance}       an instance of the twig engine
 	*/
-	public static function loadDebug($instance) {
+	public static function loadDebug() {
 		
 		if (Config::getOption("twigDebug")) {
-			$instance->addExtension(new \Twig_Extension_Debug());
+			self::$instance->addExtension(new \Twig_Extension_Debug());
 		}
-		
-		return $instance;
 		
 	}
 	
 	/**
 	* Load filters for the Twig PatternEngine
-	* @param  {Instance}       an instance of the twig engine
-	*
-	* @return {Instance}       an instance of the twig engine
 	*/
-	public static function loadFilters($instance) {
+	public static function loadFilters() {
 		
 		// load defaults
 		$filterDir = Config::getOption("sourceDir").DIRECTORY_SEPARATOR."_twig-components/filters";
@@ -82,7 +121,7 @@ class TwigUtil {
 					
 					// $filter should be defined in the included file
 					if (isset($filter)) {
-						$instance->addFilter($filter);
+						self::$instance->addFilter($filter);
 						unset($filter);
 					}
 					
@@ -92,17 +131,12 @@ class TwigUtil {
 			
 		}
 		
-		return $instance;
-		
 	}
 	
 	/**
 	* Load functions for the Twig PatternEngine
-	* @param  {Instance}       an instance of the twig engine
-	*
-	* @return {Instance}       an instance of the twig engine
 	*/
-	public static function loadFunctions($instance) {
+	public static function loadFunctions() {
 		
 		// load defaults
 		$functionDir = Config::getOption("sourceDir").DIRECTORY_SEPARATOR."_twig-components/functions";
@@ -125,7 +159,7 @@ class TwigUtil {
 					
 					// $function should be defined in the included file
 					if (isset($function)) {
-						$instance->addFunction($function);
+						self::$instance->addFunction($function);
 						unset($function);
 					}
 					
@@ -135,17 +169,12 @@ class TwigUtil {
 			
 		}
 		
-		return $instance;
-		
 	}
 	
 	/**
 	* Load macros for the Twig PatternEngine
-	* @param  {Instance}       an instance of the twig engine
-	*
-	* @return {Instance}       an instance of the twig engine
 	*/
-	public static function loadMacros($instance) {
+	public static function loadMacros() {
 		
 		// load defaults
 		$macroDir = Config::getOption("sourceDir").DIRECTORY_SEPARATOR."_macros";
@@ -165,7 +194,7 @@ class TwigUtil {
 				if ($baseName[0] != "_") {
 					
 					// add the macro to the global context
-					$instance->addGlobal($file->getBasename(".".$macroExt), $instance->loadTemplate($baseName));
+					self::$instance->addGlobal($file->getBasename(".".$macroExt), self::$instance->loadTemplate($baseName));
 					
 				}
 				
@@ -173,17 +202,12 @@ class TwigUtil {
 			
 		}
 		
-		return $instance;
-		
 	}
 	
 	/**
 	* Load tags for the Twig PatternEngine
-	* @param  {Instance}       an instance of the twig engine
-	*
-	* @return {Instance}       an instance of the twig engine
 	*/
-	public static function loadTags($instance) {
+	public static function loadTags() {
 		
 		// load defaults
 		$tagDir = Config::getOption("sourceDir").DIRECTORY_SEPARATOR."_twig-components/tags";
@@ -206,7 +230,7 @@ class TwigUtil {
 					
 					// Project_{filenameBase}_TokenParser should be defined in the include
 					$className = "Project_".$file->getBasename(".".$tagExt)."_TokenParser";
-					$instance->addTokenParser(new $className());
+					self::$instance->addTokenParser(new $className());
 					
 				}
 				
@@ -214,17 +238,12 @@ class TwigUtil {
 			
 		}
 		
-		return $instance;
-		
 	}
 	
 	/**
 	* Load functions for the Twig PatternEngine
-	* @param  {Instance}       an instance of the twig engine
-	*
-	* @return {Instance}       an instance of the twig engine
 	*/
-	public static function loadTests($instance) {
+	public static function loadTests() {
 		
 		// load defaults
 		$testDir = Config::getOption("sourceDir").DIRECTORY_SEPARATOR."_twig-components/tests";
@@ -247,7 +266,7 @@ class TwigUtil {
 					
 					// $test should be defined in the included file
 					if (isset($test)) {
-						$instance->addTest($test);
+						self::$instance->addTest($test);
 						unset($test);
 					}
 					
@@ -256,8 +275,6 @@ class TwigUtil {
 			}
 			
 		}
-		
-		return $instance;
 		
 	}
 	
