@@ -66,10 +66,18 @@ class PatternLoader extends Loader {
 		$loaders   = array();
 		$loaders[] = new Twig_Loader_PatternPartialLoader(Config::getOption("patternSourceDir"),array("patternPaths" => $options["patternPaths"]));
 
+		//Grab the path to an optional starterKit Base for automatic Twig template inheritance / overrides mixed in with the local Pattern Lab instance.
+		$starterKitBase = Config::getOption("starterKitBasePath");
+
 		// add the paths to the filesystem loader if the paths existed
 		if (count($filesystemLoaderPaths) > 0) {
 			$filesystemLoader = new \Twig_Loader_Filesystem($filesystemLoaderPaths);
 			$loaders[] = TwigUtil::addPaths($filesystemLoader, $patternSourceDir);
+
+			//If a StarterKit Base exists, add it AFTER so local patterns are preferred over Base patterns. 
+			if (is_dir($starterKitBase)) {
+				$loaders[] = TwigUtil::addPaths($filesystemLoader, $starterKitBase);
+			}
 		}
 		$loaders[] = new \Twig_Loader_String();
 		
