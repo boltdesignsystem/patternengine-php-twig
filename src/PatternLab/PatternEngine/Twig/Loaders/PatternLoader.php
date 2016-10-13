@@ -64,12 +64,14 @@ class PatternLoader extends Loader {
 		// set-up the loader list in order that they should be checked
 		// 1. Patterns 2. Filesystem 3. String
 		$loaders   = array();
+		// 1. add Patterns
 		$loaders[] = new Twig_Loader_PatternPartialLoader(Config::getOption("patternSourceDir"),array("patternPaths" => $options["patternPaths"]));
 
 		//Grab the path to an optional starterKit Base for automatic Twig template inheritance / overrides mixed in with the local Pattern Lab instance.
 		$starterKitBase = Config::getOption("starterKitBasePath");
 
 		// add the paths to the filesystem loader if the paths existed
+		// 2. add the paths to the filesystem loader if the paths existed
 		if (count($filesystemLoaderPaths) > 0) {
 			$filesystemLoader = new \Twig_Loader_Filesystem($filesystemLoaderPaths);
 			$loaders[] = TwigUtil::addPaths($filesystemLoader, $patternSourceDir);
@@ -79,6 +81,18 @@ class PatternLoader extends Loader {
 				$loaders[] = TwigUtil::addPaths($filesystemLoader, $starterKitBase);
 			}
 		}
+
+		// Setting loaders and giving plugins a chance to manipulate them
+		TwigUtil::setLoaders($loaders);
+		// set-up the dispatcher
+		$dispatcherInstance = Dispatcher::getInstance();
+		$dispatcherInstance->dispatch("twigLoaderPreInit.customize");
+		// getting the loaders back
+		$loaders = TwigUtil::getLoaders();
+
+		// 3. add String loader
+		// This *must* go last or no loaders after will work ~ https://github.com/symfony/symfony/issues/10865
+		// @todo Remove `Twig_Loader_String` - if a Twig include path is wrong, this outputs the string anyway with no error ~ https://github.com/symfony/symfony/issues/10865
 		$loaders[] = new \Twig_Loader_String();
 		
 		// set-up Twig
@@ -95,8 +109,6 @@ class PatternLoader extends Loader {
 		TwigUtil::loadDebug();
 		TwigUtil::loadMacros();
 
-		// set-up the dispatcher
-		$dispatcherInstance = Dispatcher::getInstance();
 		$dispatcherInstance->dispatch("twigLoader.customize");
 		$dispatcherInstance->dispatch("twigPatternLoader.customize");
 
@@ -113,7 +125,17 @@ class PatternLoader extends Loader {
 	*/
 	public function render($options = array()) {
 		
-		return $this->instance->render($options["pattern"], $options["data"]);
+		$result = $this->instance->render($options["pattern"], $options["data"]);
+		// This error handler catches files that didn't render using any of the loaders.
+		// The most common scenario is when a file's contents get passed to and through `Twig_Loader_String` and
+		// outputs the raw Twig file contents like `@atoms/buttons/button.twig`.
+		// @todo Remove this once `Twig_Loader_String` is removed.
+		if (strpos($result, "@") === 0) {
+			echo "Twig file not found: " . $result . "\n";
+			exit(1);
+		} else {
+			return $result;
+		}
 		
 	}
 	
