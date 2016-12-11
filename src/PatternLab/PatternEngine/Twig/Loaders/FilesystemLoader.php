@@ -32,6 +32,43 @@ class FilesystemLoader extends Loader {
 		$filesystemLoaderPaths[] = $options["templatePath"];
 		$filesystemLoaderPaths[] = $options["partialsPath"];
 		
+		// print_r($options["partialsPath"]);
+		
+		// $filesystemLoaderPaths[] = Config::getOption("patternSourceDir");
+		
+		// add source/_patterns subdirectories for Drupal theme template compatibility
+		$patternSourceDir = Config::getOption("sourceDir").DIRECTORY_SEPARATOR."_patterns";
+		$patternObjects = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($patternSourceDir), \RecursiveIteratorIterator::SELF_FIRST);
+		$patternObjects->setFlags(\FilesystemIterator::SKIP_DOTS);
+
+		// sort the returned objects
+		$patternObjects = iterator_to_array($patternObjects);
+		ksort($patternObjects);
+		
+
+		foreach ($patternObjects as $name => $object) {
+			if ($object->isDir()) {
+				// print_r($object->getPathname());
+				// print('
+				// 
+				// ');
+				$filesystemLoaderPaths[] = $object->getPathname();
+			}
+		}
+		
+		
+		
+		
+		
+		// $filesystemLoaderPaths[] = $options["patternPaths"];
+		// $filesystemLoaderPaths[] 
+		// echo $options["templatePath"];
+		// echo $options["patternPaths"];
+		// echo $options["partialsPath"];
+		
+		// echo Config::getOption("patternSourceDir");
+		
+		
 		// see if source/_macros exists. if so add it to be searchable
 		$macrosPath = Config::getOption("sourceDir").DIRECTORY_SEPARATOR."_macros";
 		if (is_dir($macrosPath)) {
@@ -43,6 +80,17 @@ class FilesystemLoader extends Loader {
 		if (is_dir($layoutsPath)) {
 			$filesystemLoaderPaths[] = $layoutsPath;
 		}
+		
+		
+		$patternsPath = Config::getOption("sourceDir").DIRECTORY_SEPARATOR."_patterns";
+		if (is_dir($layoutsPath)) {
+			$filesystemLoaderPaths[] = $patternsPath;
+		}
+		
+		// $filesystemLoader = new \Twig_Loader_Filesystem($filesystemLoaderPaths);
+		// $loaders[] = TwigUtil::addPaths($filesystemLoader, $patternSourceDir);
+		// $filesystemLoaderPaths = TwigUtil::addPaths($filesystemLoader, $patternSourceDir);
+		
 		
 		// set-up Twig
 		$twigLoader = new \Twig_Loader_Filesystem($filesystemLoaderPaths);
